@@ -1,4 +1,8 @@
 from time import time
+import datetime
+import os
+
+os.environ["CUDA_VISIBLE_DEVICES"]="2"
 
 from models.Gan import Gan
 from models.maligan_basic.MailganDiscriminator import Discriminator
@@ -27,10 +31,16 @@ class Maligan(Gan):
         self.batch_size = 64
         self.generate_num = 128
         self.start_token = 0
-
-        self.oracle_file = 'save/oracle.txt'
-        self.generator_file = 'save/generator.txt'
-        self.test_file = 'save/test_file.txt'
+        now = datetime.datetime.now()
+        self.start_time = now.strftime("%Y-%m-%d-%H%M")
+        
+        self.oracle_file = 'save/oracle_maligan_' + self.start_time+str('.txt')
+        self.generator_file = 'save/generator_maligan_' + self.start_time+str('.txt')
+        self.test_file = 'save/test_file_maligan_' + self.start_time+str('.txt')
+        
+        #self.oracle_file = 'save/oracle.txt'
+        #self.generator_file = 'save/generator.txt'
+        #self.test_file = 'save/test_file.txt'
 
     def init_oracle_trainng(self, oracle=None):
         if oracle is None:
@@ -85,6 +95,7 @@ class Maligan(Gan):
             self.oracle_data_loader.create_batches(self.generator_file)
         if self.log is not None:
             if self.epoch == 0 or self.epoch == 1:
+                self.log.write('epochs, ')
                 for metric in self.metrics:
                     self.log.write(metric.get_name() + ',')
                 self.log.write('\n')
@@ -303,9 +314,10 @@ class Maligan(Gan):
 
         self.sess.run(tf.global_variables_initializer())
 
-        self.pre_epoch_num = 80
-        self.adversarial_epoch_num = 100
-        self.log = open('experiment-log-maligan-real.csv', 'w')
+        self.pre_epoch_num = 8
+        self.adversarial_epoch_num = 10
+        self.log = open('experiment-log-maligan-real_'+self.start_time+str('.csv'), 'w', 1)
+        #self.log = open('experiment-log-maligan-real.csv', 'w')
         generate_samples(self.sess, self.generator, self.batch_size, self.generate_num, self.generator_file)
         self.gen_data_loader.create_batches(self.oracle_file)
 

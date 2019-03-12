@@ -1,5 +1,6 @@
 import getopt
 import sys
+#import os
 
 from colorama import Fore
 
@@ -11,6 +12,7 @@ from models.rankgan.Rankgan import Rankgan
 from models.seqgan.Seqgan import Seqgan
 from models.textGan_MMD.Textgan import TextganMmd
 
+#os.environ["CUDA_VISIBLE_DEVICES"]="2"
 
 def set_gan(gan_name):
     gans = dict()
