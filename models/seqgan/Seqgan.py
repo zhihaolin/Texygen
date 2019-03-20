@@ -1,9 +1,6 @@
 import json
 from time import time
 import datetime
-import os
-
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
 from models.Gan import Gan
 from models.seqgan.SeqganDataLoader import DataLoader, DisDataloader
@@ -34,13 +31,16 @@ class Seqgan(Gan):
         self.batch_size = 64
         self.generate_num = 128
         self.start_token = 0
-        
+
+        self.generate_final_num = 16000
         now = datetime.datetime.now()
         self.start_time = now.strftime("%Y-%m-%d-%H%M")
         
         self.oracle_file = 'save/oracle_seqgan_' + self.start_time+str('.txt')
         self.generator_file = 'save/generator_seqgan_' + self.start_time+str('.txt')
+        self.generator_final_file = 'save/generator_final_seqgan_' + self.start_time+str('.txt')
         self.test_file = 'save/test_file_seqgan_' + self.start_time+str('.txt')
+        self.test_final_file = 'save/test_final_file_seqgan_' + self.start_time+str('.txt')
         
         #now = datetime.datetime.now()
         #self.oracle_file = 'save/oracle_seqgan_' + now.strftime("%Y-%m-%d-%H%M")+str('.txt')
@@ -320,8 +320,8 @@ class Seqgan(Gan):
 
         self.sess.run(tf.global_variables_initializer())
 
-        self.pre_epoch_num = 8
-        self.adversarial_epoch_num = 10        
+        self.pre_epoch_num = 1
+        self.adversarial_epoch_num = 2        
         self.log = open('experiment-log-seqgan-real_'+self.start_time+str('.csv'), 'w', 1)
         #self.log = open('experiment-log-seqgan-real.csv', 'w')
         generate_samples(self.sess, self.generator, self.batch_size, self.generate_num, self.generator_file)
@@ -359,7 +359,8 @@ class Seqgan(Gan):
                     self.generator.rewards: rewards
                 }
                 loss, _ = self.sess.run([self.generator.g_loss, self.generator.g_updates], feed_dict=feed)
-                print(loss)
+                #print(loss)
+                #print('loss:' + str(loss))
             end = time()
             self.add_epoch()
             print('epoch:' + str(self.epoch) + '\t time:' + str(end - start))
@@ -371,5 +372,12 @@ class Seqgan(Gan):
             self.reward.update_params()
             for _ in range(15):
                 self.train_discriminator()
+        
+        #Generate final samples
+        generate_samples(self.sess, self.generator, 1, self.generate_final_num, self.generator_final_file)
+        with open(self.generator_final_file, 'r') as file:
+            codes = get_tokenlized(self.generator_final_file)
+        with open(self.test_final_file, 'w') as outfile:
+            outfile.write(code_to_text(codes=codes, dictionary=dict))
 
 

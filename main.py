@@ -1,6 +1,10 @@
+import os
+
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"]="0,1"
+
 import getopt
 import sys
-#import os
 
 from colorama import Fore
 
@@ -24,6 +28,11 @@ def set_gan(gan_name):
     gans['maligan'] = Maligan
     gans['mle'] = Mle
     try:
+        os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+        if gan_name=="seqgan":
+            os.environ["CUDA_VISIBLE_DEVICES"]="1"
+        elif gan_name== "maligan":
+            os.environ["CUDA_VISIBLE_DEVICES"]="0"
         Gan = gans[gan_name.lower()]
         gan = Gan()
         gan.vocab_size = 5000
@@ -65,6 +74,7 @@ def parse_cmd(argv):
         if not '-g' in opt_arg.keys():
             print('unspecified GAN type, use MLE training only...')
             gan = set_gan('mle')
+            #gan = set_gan('leakgan')
         else:
             gan = set_gan(opt_arg['-g'])
         if not '-t' in opt_arg.keys():
@@ -83,5 +93,7 @@ def parse_cmd(argv):
 
 
 if __name__ == '__main__':
+    #os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+    #os.environ["CUDA_VISIBLE_DEVICES"]="0,1"
     gan = None
     parse_cmd(sys.argv[1:])
