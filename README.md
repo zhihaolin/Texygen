@@ -74,3 +74,7 @@ More detailed benchmark settings and evaluation results are provided [here](docs
 }
 ```
 
+## Run
+To run the program, use the command below
+nohup stdbuf -oL python -u  main.py -g maligan -t real -d ~/data/toxic_W25_L4000.txt > run_maligan.out &
+
